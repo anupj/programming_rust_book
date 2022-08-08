@@ -9,10 +9,11 @@ struct GcdParameters {
 
 
 fn main() {
-    let server = HttpServer::new({|| {
+    let server = HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(get_index))
-    }});
+            .route("/gcd", web::post().to(post_gcd))
+    });
 
     println!("Serving on http://localhost:3000....");
 
