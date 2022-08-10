@@ -68,14 +68,6 @@ fn test_parse_complex() {
     assert_eq!(parse_complex(",-0.0625"), None);
 }
 
-/*fn complex_square_add_loop(c: Complex<f64>) {
-    let mut z = Complex {re: 0.0, im: 0.0};
-    loop {
-        z = z * z + c;
-    }
-
-}*/
-
 /// Given the row and column of a pixel in the output image, return the
 /// corresponding point on the complex plane.
 /// 
@@ -157,7 +149,9 @@ fn main() {
     // render(&mut pixels, bounds, upper_left, lower_right);
     // commenting out the call to render and making it multi-threaded
     let threads = 8;
-    let rows_per_band = bounds.1 / threads + 1;
+    println!("threads + 1 is {} and bounds.1 is {}", threads + 1, bounds.1);
+    let rows_per_band = bounds.1 / threads + 1; // I don't understand how this rounding up works
+    println!("rows per band is {}", rows_per_band); // when I set bounds.1 as 1000 and threads+1 is 9, I expect the value of rows_per_band to be 111 and not 126 (which is the actual outcome)
     {
         let bands: Vec<&mut [u8]> = pixels.chunks_mut(rows_per_band * bounds.0).collect();
         crossbeam::scope(|spawner| {
