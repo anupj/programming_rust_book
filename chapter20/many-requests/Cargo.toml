@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 # We need the 'unstable' feature to get 'spawn_local'.
 async-std = { version = "1.7", features = ["unstable"] }
+surf = "1.0"
