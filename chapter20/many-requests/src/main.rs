@@ -5,6 +5,9 @@ pub async fn many_requests(urls: &[String]) -> Vec<Result<String, surf::Exceptio
 
     let mut handles = vec![];
     for url in urls {
+        // `recv_string()` is an async method
+        // that returns a `Send +'static` future
+        // which we can then send to `spawn()`
         let request = client.get(&url).recv_string();
         handles.push(task::spawn(request));
     }
