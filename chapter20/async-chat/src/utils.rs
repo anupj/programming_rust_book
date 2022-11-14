@@ -1,0 +1,39 @@
+use std::error::Error;
+
+pub type ChatError = Box<dyn Error + Send + Sync + 'static>;
+pub type ChatResult<T> = Result<T, ChatError>;
+
+use async_std::prelude::*;
+use serde::Serialize;
+use std::marker::Unpin;
+
+pub async fn send_as_json<S, P>(outbound: &mut S, packet: &P) -> ChatResult<()>
+where
+    S: async_std::io::Write + Unpin,
+    P: Serialize,
+{
+    // Rather than serializing the packet directly to the
+    // outbound stream, we serialize it to a temporary
+    // `String` and then write it to `outbound`
+    // because `serde_json` only provides functions to
+    // serialize values for *synchronous* streams.
+    // And we are working in async context here
+    let mut json = serde_json::to_string(&packet)?;
+    json.push('\n');
+    outbound.write_all(json.as_bytes()).await?;
+    Ok(())
+}
+
+use serde::de::DeserializeOwned;
+
+pub fn receive_as_json<S, P>(inbound: S) -> impl Stream<Item = ChatResult<P>>
+where
+    S: async_std::io::BufRead + Unpin,
+    P: DeserializeOwned,
+{
+    inbound.lines().map(|line_result| -> ChatResult<P> {
+        let line = line_result?;
+        let parsed = serde_json::from_str::<P>(&line)?;
+        Ok(parsed)
+    })
+}
